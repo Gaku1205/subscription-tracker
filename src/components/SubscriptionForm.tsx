@@ -23,6 +23,8 @@ interface SubscriptionFormProps {
   today: DateString;
   /** 検査を通った値を保存する。保存できたら true */
   onAdd: (value: ValidDraft) => boolean;
+  /** 直す時は、削除と「やめる」（PC だけ）を付ける */
+  edit?: { onDelete: () => void; onCancel: () => void };
   /** 出した時に名前の欄へフォーカスするか（"desktop" は PC の幅の時だけ） */
   focusOnMount?: boolean | "desktop";
   /** 追加できた後、名前の欄へフォーカスを戻すか（PC の右列で続けて入れるため） */
@@ -54,6 +56,7 @@ export function SubscriptionForm({
   onErrorsChange,
   today,
   onAdd,
+  edit,
   focusOnMount = false,
   refocusAfterAdd = false,
 }: SubscriptionFormProps) {
@@ -225,9 +228,23 @@ export function SubscriptionForm({
         <FieldError id={dateErrorId} message={errors.nextDate} />
       </div>
 
-      <button type="submit" className="btn-primary form-submit">
-        追加する
-      </button>
+      <div className="form-actions">
+        {edit && (
+          <button type="button" className="btn-delete" onClick={edit.onDelete}>
+            このサブスクを削除
+          </button>
+        )}
+        <div className="form-submit-row">
+          <button type="submit" className="btn-primary form-submit">
+            {edit ? "変更を保存" : "追加する"}
+          </button>
+          {edit && (
+            <button type="button" className="btn-weak form-cancel" onClick={edit.onCancel}>
+              やめる
+            </button>
+          )}
+        </div>
+      </div>
     </form>
   );
 }

@@ -4,6 +4,13 @@ import { useSyncExternalStore } from "react";
 import { todayString, type DateString } from "./date";
 import { parseSubscriptions, readRaw, STORAGE_KEY, writeSubscriptions, type KeyValueStorage } from "./storage";
 import type { Subscription } from "./subscription";
+import {
+  removeSubscription,
+  restoreSubscription,
+  updateSubscription,
+  type RemovedSubscription,
+} from "./subscriptionEdit";
+import type { ValidDraft } from "./validation";
 
 const listeners = new Set<() => void>();
 let cachedRaw: string | null | undefined;
@@ -57,6 +64,30 @@ export function addSubscription(sub: Subscription): boolean {
   const ok = writeSubscriptions(getStorage(), [...getSnapshot(), sub]);
   if (ok) notify();
   return ok;
+}
+
+function commit(next: Subscription[] | null): boolean {
+  if (!next) return false;
+  const ok = writeSubscriptions(getStorage(), next);
+  if (ok) notify();
+  return ok;
+}
+
+/** 1件を直して保存する。保存できたら true */
+export function saveSubscription(id: string, value: ValidDraft): boolean {
+  return commit(updateSubscription(getSnapshot(), id, value));
+}
+
+/** 1件を消して保存する。消せたら、元に戻すための情報を返す。できなければ null */
+export function deleteSubscription(id: string): RemovedSubscription | null {
+  const result = removeSubscription(getSnapshot(), id);
+  if (!result) return null;
+  return commit(result.subs) ? result.removed : null;
+}
+
+/** 消した物を元の位置に戻して保存する。保存できたら true */
+export function undeleteSubscription(removed: RemovedSubscription): boolean {
+  return commit(restoreSubscription(getSnapshot(), removed));
 }
 
 function subscribeToday(): () => void {
