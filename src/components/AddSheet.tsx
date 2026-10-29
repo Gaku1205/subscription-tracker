@@ -7,13 +7,15 @@ export type SheetPhase = "open" | "closing";
 interface AddSheetProps {
   phase: SheetPhase;
   onClose: () => void;
+  /** 題名（「サブスクを足す」か「サブスクを直す」） */
+  title: string;
   children: ReactNode;
 }
 
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** スマホの入力シート（下から出る） */
-export function AddSheet({ phase, onClose, children }: AddSheetProps) {
+export function AddSheet({ phase, onClose, title, children }: AddSheetProps) {
   const titleId = useId();
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +53,7 @@ export function AddSheet({ phase, onClose, children }: AddSheetProps) {
       >
         <div className="sheet-header">
           <h2 id={titleId} className="sheet-title">
-            サブスクを足す
+            {title}
           </h2>
           <button type="button" className="btn-weak" onClick={onClose}>
             閉じる
